@@ -294,17 +294,11 @@ elif page == "🚀 3. YZ Motoru":
     # Sadece dersler değil, bir sonuç (program) üretilmişse asistan çalışsın:
     if len(st.session_state.dersler) > 0:
         # --- YENİ: SOL MENÜDEN TAŞINAN AYARLAR BURADA ---
-        with st.expander("⚙️ Gelişmiş YZ ve Simülasyon Ayarları (İsteğe Bağlı)"):
-            a1, a2 = st.columns(2)
-            with a1:
-                nesil = st.slider("İşlem Hassasiyeti (Nesil)", 50, 500, 100)
-                # Eski secilen_strateji = st.selectbox(...) satırını şununla değiştir:
-                st.session_state.secilen_strateji = st.selectbox("🎯 Optimizasyon Hedefi", ["Dengeli", "Hoca Konforu Maksimum"], index=0 if st.session_state.secilen_strateji == "Dengeli" else 1)
-                secilen_strateji = st.session_state.secilen_strateji
-            with a2:
-                kontenjan_artisi = st.slider("Öğrenci Kontenjan Artışı (%)", 0, 100, 0)
-                donem_baslangic = st.date_input("Dönem Başlangıç Tarihi:", datetime.date(2026, 9, 14))
-        # ------------------------------------------------
+        # --- KULLANICIYA GÖZÜKMEYEN GİZLİ MOTOR AYARLARI ---
+        st.session_state.secilen_strateji = "Dengeli"
+        secilen_strateji = st.session_state.secilen_strateji
+        nesil_sayisi = 150  # YZ'nin arka plandaki düşünme gücü (Sabit)
+                # ------------------------------------------------
         # --- YENİ: GELECEK SİMÜLATÖRÜ HESAPLAMASI ---
         max_kapasite = max([d.get("kapasite", 0) for d in st.session_state.derslikler]) if st.session_state.derslikler else 0
         en_kalabalik_ders = max([d.get("ogrenci_sayisi", 0) for d in st.session_state.dersler])
