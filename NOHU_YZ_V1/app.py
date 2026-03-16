@@ -364,6 +364,7 @@ elif page == "🚀 3. YZ Motoru":
         # Eğer indirme butonu (download_button) kodların varsa, onlar da tam olarak bu satırın altına gelecek.
             
         # --- EĞER HAFIZADA PROGRAM VARSA GÖSTER ---
+        # --- EĞER HAFIZADA PROGRAM VARSA GÖSTER ---
         if "sonuc" in st.session_state and st.session_state.sonuc is not None and not st.session_state.sonuc.empty:
             
             # 1. METRİKLER VE SKORLAR
@@ -376,12 +377,9 @@ elif page == "🚀 3. YZ Motoru":
             s3.metric("🎓 Öğrenci Memnuniyeti", f"%{o_skor}")
             st.divider()
 
-            # 2. TABLO ÖNİZLEMESİ
+            # 2. EXCEL ÜRETİMİ VE İNDİRME BUTONU (Artık Tablonun Üstünde!)
             st.markdown("### 📊 Oluşturulan Program Önizlemesi")
-            st.dataframe(st.session_state.sonuc, use_container_width=True)
-            st.divider()
-
-            # 3. YENİ MATRİS EXCEL OLUŞTURMA VE İNDİRME BUTONU
+            
             out_g = io.BytesIO()
             try:
                 df = st.session_state.sonuc.copy()
@@ -402,7 +400,7 @@ elif page == "🚀 3. YZ Motoru":
                 writer = pd.ExcelWriter(out_g, engine='openpyxl')
                 
                 siniflar = df['Dönem/Sınıf'].unique()
-                sheet_eklendi_mi = False  # Güvenlik Kilidi
+                sheet_eklendi_mi = False
                 
                 for sinif in sorted(siniflar):
                     temiz_sinif = str(sinif).replace("/", "_").replace("\\", "_").replace("*", "").replace("?", "").replace("[", "").replace("]", "")
@@ -474,6 +472,7 @@ elif page == "🚀 3. YZ Motoru":
 
                 writer.close()
 
+                # İŞTE BURASI: BUTON ARTIK TABLONUN ÜZERİNDE
                 st.download_button(
                     label="📥 Gerçek Okul Formatında İndir (Matris Tablo)", 
                     data=out_g.getvalue(), 
@@ -483,8 +482,9 @@ elif page == "🚀 3. YZ Motoru":
             except Exception as e:
                 import traceback
                 st.error(f"🚨 YZ Excel'i oluştururken bir hata oluştu: {str(e)}")
-                st.error(f"Hata Detayı: {traceback.format_exc()}")
             
+            # 3. ŞİMDİ TABLOYU ÇİZDİR (Butonun hemen altında devasa bir şekilde duracak)
+            st.dataframe(st.session_state.sonuc, use_container_width=True)
             # --- YENİ: SINIF DOLULUK ORANI ANALİZİ (Tamamen Zırhlı) ---
             # --- YENİ: SINIF DOLULUK ORANI ANALİZİ (Tamamen Zırhlı) ---
             st.divider()
