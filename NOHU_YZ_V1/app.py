@@ -358,14 +358,14 @@ elif page == "🚀 3. YZ Motoru":
                 durum.update(label="✅ Optimizasyon Tamamlandı!", state="complete", expanded=False)
 
         # --- EKRANDA TABLO ÖNİZLEMESİ GÖSTERME KISMI ---
-                st.markdown("### 📊 Oluşturulan Program Önizlemesi")
-                st.dataframe(st.session_state.sonuc, use_container_width=True)
+                
         # ----------------------------------------------
 
         # Eğer indirme butonu (download_button) kodların varsa, onlar da tam olarak bu satırın altına gelecek.
             
-            st.rerun()
         if st.session_state.sonuc is not None:
+            st.markdown("### 📊 Oluşturulan Program Önizlemesi")
+                st.dataframe(st.session_state.sonuc, use_container_width=True)
             h_skor, o_skor = memnuniyet_hesapla(st.session_state.sonuc)
             kalite_puani = max(0, 100 - int(st.session_state.fitness / 5)) 
             s1, s2, s3 = st.columns(3)
