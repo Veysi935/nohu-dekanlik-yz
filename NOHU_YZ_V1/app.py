@@ -1,4 +1,4 @@
-import streamlit as st
+dimport streamlit as st
 import pandas as pd
 import plotly.express as px
 import main 
@@ -394,34 +394,37 @@ elif page == "🚀 3. YZ Motoru":
                 st.divider()
             
             # --- YENİ: OKUL FORMATINDA MATRİS (GRID) EXCEL ÇIKTISI ---
+            # 3. ŞİMDİ EXCEL OLUŞTURMA VE İNDİRME BUTONU
             out_g = io.BytesIO()
             try:
                 with pd.ExcelWriter(out_g, engine='openpyxl') as writer:
                     df = st.session_state.sonuc.copy()
                     
-                    # 1. Dersleri Numaralandır (Senin istediğin [1] mantığı)
+                    # 1. 'Dönem/Sınıf' Sütununu Güvenli Hale Getir (Boşlukları 'Genel' yap)
+                    df['Dönem/Sınıf'] = df['Dönem/Sınıf'].fillna('Genel')
+                    df['Dönem/Sınıf'] = df['Dönem/Sınıf'].astype(str).replace(['nan', '-', '', 'None'], 'Genel')
+                    
+                    # 2. Dersleri Numaralandır (Çökmeyen Güvenli Yöntem)
                     unique_courses = df[['Ders', 'Hoca', 'Sınıf']].drop_duplicates().reset_index(drop=True)
-                    unique_courses.index += 1  # Numara 1'den başlasın
-                    unique_courses['D_Kodu'] = unique_courses.index
-
+                    unique_courses['D_Kodu'] = range(1, len(unique_courses) + 1)
+                    
                     # Numaraları ana tabloya ekle
                     df = pd.merge(df, unique_courses, on=['Ders', 'Hoca', 'Sınıf'], how='left')
+                    df['Hücre_Metni'] = "[" + df['D_Kodu'].astype(str) + "] " + df['Ders'].astype(str)
                     
-                    # Hücrenin içine sadece [1] Ders Adı yazılacak (Kutu taşmasın diye)
-                    df['Hücre_Metni'] = "[" + df['D_Kodu'].astype(str) + "] " + df['Ders']
-                    
-                    # Her Sınıf/Dönem (1. Sınıf, 2. Sınıf vb.) için excelde AYRI BİR SEKME (TAB) oluşturuyoruz
+                    # 3. Sınıfları Bul ve Döngüye Gir
                     siniflar = df['Dönem/Sınıf'].unique()
-                    if len(siniflar) == 0 or (len(siniflar) == 1 and str(siniflar[0]) in ['nan', '-']):
-                        siniflar = ['Genel']
-                        df['Dönem/Sınıf'] = 'Genel'
-
-                    for sinif in sorted([str(s) for s in siniflar if str(s) != 'nan']):
+                    sheet_eklendi_mi = False  # Güvenlik Kilidi
+                    
+                    for sinif in sorted(siniflar):
                         sheet_name = f"{sinif}. Sınıf" if sinif != 'Genel' else "Ders Programı"
-                        sheet_name = sheet_name[:30] # Excel sekme adı sınırı
+                        sheet_name = sheet_name[:30] # Excel sekme adı sınırı (Max 31 karakter)
                         
                         df_sinif = df[df['Dönem/Sınıf'] == sinif]
                         
+                        if df_sinif.empty:
+                            continue
+                            
                         # Saat ve Gün iskeleti (Boş Tablo)
                         gunler_sirali = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma"]
                         saatler_sirali = ["08:00", "09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00"]
@@ -435,8 +438,7 @@ elif page == "🚀 3. YZ Motoru":
                                 if pd.isna(mevcut) or str(mevcut).strip() == "":
                                     pivot.at[s, g] = metin
                                 else:
-                                    # Eğer aynı saatte iki ders varsa (seçmeli vs.) alt alta yaz
-                                    pivot.at[s, g] = mevcut + "\n\n" + metin 
+                                    pivot.at[s, g] = str(mevcut) + "\n\n" + metin 
                                     
                         pivot.fillna("", inplace=True)
                         pivot.reset_index(inplace=True)
@@ -444,6 +446,7 @@ elif page == "🚀 3. YZ Motoru":
                         
                         # Excel'e aktar
                         pivot.to_excel(writer, sheet_name=sheet_name, index=False)
+                        sheet_eklendi_mi = True
                         
                         # --- GÖRSEL TASARIM (STYLING) BÖLÜMÜ ---
                         ws = writer.sheets[sheet_name]
@@ -453,41 +456,46 @@ elif page == "🚀 3. YZ Motoru":
                         gri_arkaplan = PatternFill(start_color="D9D9D9", end_color="D9D9D9", fill_type="solid")
                         
                         # Sütun Genişliklerini Okul Formatında Ayarla
-                        ws.column_dimensions['A'].width = 12 # Saat sütunu
+                        ws.column_dimensions['A'].width = 12 
                         for col in ['B', 'C', 'D', 'E', 'F']:
-                            ws.column_dimensions[col].width = 23 # Gün sütunları (Geniş kutular)
+                            ws.column_dimensions[col].width = 23 
                             
-                        # Tablo içini ortala, kenarlık çiz ve metni kaydır (Wrap Text)
+                        # Tablo içini ortala, kenarlık çiz
                         for row in ws.iter_rows(min_row=1, max_row=len(pivot)+1, min_col=1, max_col=6):
                             for cell in row:
                                 cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
                                 cell.border = ince_kenarlik
-                                # Başlık satırı ve Saat sütunu gri ve kalın olsun
                                 if cell.row == 1 or cell.column == 1:
                                     cell.font = Font(bold=True)
                                     cell.fill = gri_arkaplan
                                     
-                        # --- EN ALTTAKİ O MUHTEŞEM BİLGİ KISMI (LEGEND) ---
+                        # --- EN ALTTAKİ BİLGİ KISMI (LEGEND) ---
                         start_row = len(pivot) + 4
                         ws.cell(row=start_row, column=1, value="DERS, ÖĞRETİM ELEMANI VE DERSLİK BİLGİLERİ").font = Font(bold=True)
                         start_row += 1
                         
-                        # Sadece bu sınıfa (sekmeye) ait dersleri altta listele
                         sinif_dersleri = unique_courses[unique_courses['D_Kodu'].isin(df_sinif['D_Kodu'])]
                         
                         for _, r in sinif_dersleri.iterrows():
-                            # Tam istediğin format: [1] Veri Yapıları | Dr. Ahmet Yılmaz | Amfi-1
                             leg_text = f"[{r['D_Kodu']}] {r['Ders']} | 👤 {r['Hoca']} | 📍 {r['Sınıf']}"
                             ws.cell(row=start_row, column=1, value=leg_text)
-                            
-                            # Yazı uzun olacağı için hücreleri birleştir (A'dan F sütununa kadar tek hücre yap)
                             ws.merge_cells(start_row=start_row, start_column=1, end_row=start_row, end_column=6)
                             ws.cell(row=start_row, column=1).alignment = Alignment(horizontal='left')
                             start_row += 1
 
-                
+                    # EĞER HİÇBİR SEKME OLUŞTURULAMADIYSA (Hata önleyici Güvenlik Kilidi)
+                    if not sheet_eklendi_mi:
+                        pd.DataFrame({'Bilgi': ['Sınıf bilgisi bulunamadı, tüm dersler listeleniyor.']}).to_excel(writer, sheet_name="Genel Program", index=False)
+
+                st.download_button(
+                    label="📥 Gerçek Okul Formatında İndir (Matris Tablo)", 
+                    data=out_g.getvalue(), 
+                    file_name="NOHU_Gercek_Program.xlsx", 
+                    use_container_width=True
+                )
             except Exception as e:
                 st.error(f"Excel Görselleştirme Hatası: {e}")
+                
             
             # --- YENİ: SINIF DOLULUK ORANI ANALİZİ (Tamamen Zırhlı) ---
             # --- YENİ: SINIF DOLULUK ORANI ANALİZİ (Tamamen Zırhlı) ---
