@@ -298,6 +298,7 @@ elif page == "🚀 3. YZ Motoru":
         st.session_state.secilen_strateji = "Dengeli"
         secilen_strateji = st.session_state.secilen_strateji
         nesil_sayisi = 150  # YZ'nin arka plandaki düşünme gücü (Sabit)
+        kontenjan_artisi = 0
                 # ------------------------------------------------
         # --- YENİ: GELECEK SİMÜLATÖRÜ HESAPLAMASI ---
         max_kapasite = max([d.get("kapasite", 0) for d in st.session_state.derslikler]) if st.session_state.derslikler else 0
