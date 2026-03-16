@@ -353,9 +353,9 @@ elif page == "🚀 3. YZ Motoru":
                         "Özel Not (İsteğe Bağlı)": ""
                     })
                 
-                st.session_state.sonuc = pd.DataFrame(res)
+            st.session_state.sonuc = pd.DataFrame(res)
                 # İşlem kutusunu "Tamamlandı" olarak güncelliyoruz
-                durum.update(label="✅ Optimizasyon Tamamlandı!", state="complete", expanded=False)
+            durum.update(label="✅ Optimizasyon Tamamlandı!", state="complete", expanded=False)
 
         # --- EKRANDA TABLO ÖNİZLEMESİ GÖSTERME KISMI ---
                 
@@ -365,7 +365,7 @@ elif page == "🚀 3. YZ Motoru":
             
         if st.session_state.sonuc is not None:
             st.markdown("### 📊 Oluşturulan Program Önizlemesi")
-                st.dataframe(st.session_state.sonuc, use_container_width=True)
+            st.dataframe(st.session_state.sonuc, use_container_width=True)
             h_skor, o_skor = memnuniyet_hesapla(st.session_state.sonuc)
             kalite_puani = max(0, 100 - int(st.session_state.fitness / 5)) 
             s1, s2, s3 = st.columns(3)
