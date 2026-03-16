@@ -363,48 +363,34 @@ elif page == "🚀 3. YZ Motoru":
 
         # Eğer indirme butonu (download_button) kodların varsa, onlar da tam olarak bu satırın altına gelecek.
             
-        if st.session_state.sonuc is not None:
-            st.markdown("### 📊 Oluşturulan Program Önizlemesi")
-            out_g = io.BytesIO()
-
-            with pd.ExcelWriter(out_g, engine='openpyxl') as writer:
-                df = st.session_state.sonuc.copy()
-
-            st.download_button(
-                    label="📥 Gerçek Okul Formatında İndir (Matris Tablo)", 
-                    data=out_g.getvalue(), 
-                    file_name="NOHU_Gercek_Program.xlsx", 
-                    use_container_width=True
-                )
+        # --- EĞER HAFIZADA PROGRAM VARSA GÖSTER ---
+        if "sonuc" in st.session_state and st.session_state.sonuc is not None and not st.session_state.sonuc.empty:
             
-            st.dataframe(st.session_state.sonuc, use_container_width=True)
+            # 1. METRİKLER VE SKORLAR
             h_skor, o_skor = memnuniyet_hesapla(st.session_state.sonuc)
             kalite_puani = max(0, 100 - int(st.session_state.fitness / 5)) 
+            
             s1, s2, s3 = st.columns(3)
             s1.metric("🎯 YZ Program Kalitesi", f"%{kalite_puani}")
             s2.metric("👨‍🏫 Hoca Memnuniyeti", f"%{h_skor}")
             s3.metric("🎓 Öğrenci Memnuniyeti", f"%{o_skor}")
             st.divider()
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                out_g = io.BytesIO()
-        
-            if st.session_state.sonuc is not None and not st.session_state.sonuc.empty:
-                st.divider()
-            
-            # --- YENİ: OKUL FORMATINDA MATRİS (GRID) EXCEL ÇIKTISI ---
-            # 3. ŞİMDİ EXCEL OLUŞTURMA VE İNDİRME BUTONU
-           # 3. ŞİMDİ EXCEL OLUŞTURMA VE İNDİRME BUTONU
+
+            # 2. TABLO ÖNİZLEMESİ
+            st.markdown("### 📊 Oluşturulan Program Önizlemesi")
+            st.dataframe(st.session_state.sonuc, use_container_width=True)
+            st.divider()
+
+            # 3. YENİ MATRİS EXCEL OLUŞTURMA VE İNDİRME BUTONU
             out_g = io.BytesIO()
             try:
                 df = st.session_state.sonuc.copy()
                 
-                # 1. 'Dönem/Sınıf' Sütununu Güvenli Hale Getir
+                # Sınıf Sütununu Güvenli Hale Getir
                 df['Dönem/Sınıf'] = df['Dönem/Sınıf'].fillna('Genel')
                 df['Dönem/Sınıf'] = df['Dönem/Sınıf'].astype(str).replace(['nan', '-', '', 'None'], 'Genel')
                 
-                # 2. Dersleri Numaralandır
+                # Dersleri Numaralandır
                 unique_courses = df[['Ders', 'Hoca', 'Sınıf']].drop_duplicates().reset_index(drop=True)
                 unique_courses['D_Kodu'] = range(1, len(unique_courses) + 1)
                 
@@ -412,17 +398,14 @@ elif page == "🚀 3. YZ Motoru":
                 df = pd.merge(df, unique_courses, on=['Ders', 'Hoca', 'Sınıf'], how='left')
                 df['Hücre_Metni'] = "[" + df['D_Kodu'].astype(str) + "] " + df['Ders'].astype(str)
                 
-                # YAZICIYI BURADA BAŞLATIYORUZ (with bloğu kullanmadan, hatayı gizlemesin diye!)
+                # YAZICIYI BAŞLAT
                 writer = pd.ExcelWriter(out_g, engine='openpyxl')
                 
-                # 3. Sınıfları Bul ve Döngüye Gir
                 siniflar = df['Dönem/Sınıf'].unique()
                 sheet_eklendi_mi = False  # Güvenlik Kilidi
                 
                 for sinif in sorted(siniflar):
-                    # EXCEL'İ ÇÖKERTEN YASAKLI KARAKTERLERİ TEMİZLİYORUZ (/, \, ?, *, [, ])
                     temiz_sinif = str(sinif).replace("/", "_").replace("\\", "_").replace("*", "").replace("?", "").replace("[", "").replace("]", "")
-                    
                     sheet_name = f"{temiz_sinif}. Sınıf" if temiz_sinif != 'Genel' else "Ders Programı"
                     sheet_name = sheet_name[:30] # Excel sekme adı sınırı
                     
@@ -489,7 +472,6 @@ elif page == "🚀 3. YZ Motoru":
                 if not sheet_eklendi_mi:
                     pd.DataFrame({'Bilgi': ['Geçerli bir program oluşturulamadı.']}).to_excel(writer, sheet_name="Genel", index=False)
 
-                # İŞLEM BİTİNCE MANUEL KAYDET VE KAPAT
                 writer.close()
 
                 st.download_button(
@@ -502,7 +484,6 @@ elif page == "🚀 3. YZ Motoru":
                 import traceback
                 st.error(f"🚨 YZ Excel'i oluştururken bir hata oluştu: {str(e)}")
                 st.error(f"Hata Detayı: {traceback.format_exc()}")
-                
             
             # --- YENİ: SINIF DOLULUK ORANI ANALİZİ (Tamamen Zırhlı) ---
             # --- YENİ: SINIF DOLULUK ORANI ANALİZİ (Tamamen Zırhlı) ---
