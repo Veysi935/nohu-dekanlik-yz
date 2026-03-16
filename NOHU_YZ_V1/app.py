@@ -630,7 +630,12 @@ elif page == "💎 2. VIP Ayarları":
         st.info("👈 Lütfen sol menüden Excel yükleyin.")
 elif page == "🤖 5. YZ Asistan":
     if len(st.session_state.dersler) > 0:
-        st.markdown("### 🤖 YZ Dekan Asistanı (Etkileşimli Müzakere)")
+        st.markdown("### 🤖 Dekanlık YZ Asistanı", help="""
+        💡 **ASİSTANA NELER YAZABİLİRSİNİZ?**\n
+        🔹 "Tuncay Hoca Pazartesi günleri ders vermesin, programı güncelle."
+        🔹 "Ayşe Hoca sabah erken derslerine girmesin."
+        🔹 "Öğrenci şikayetlerini ve radar analizini getir."
+        """)
         
         if 'asistan_adim' not in st.session_state: st.session_state.asistan_adim = 0
         if 'on_analiz_raporu' not in st.session_state: st.session_state.on_analiz_raporu = []
