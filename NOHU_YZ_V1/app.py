@@ -365,12 +365,18 @@ elif page == "🚀 3. YZ Motoru":
             
         if st.session_state.sonuc is not None:
             st.markdown("### 📊 Oluşturulan Program Önizlemesi")
+            out_g = io.BytesIO()
+
+            with pd.ExcelWriter(out_g, engine='openpyxl') as writer:
+                df = st.session_state.sonuc.copy()
+
             st.download_button(
                     label="📥 Gerçek Okul Formatında İndir (Matris Tablo)", 
                     data=out_g.getvalue(), 
                     file_name="NOHU_Gercek_Program.xlsx", 
                     use_container_width=True
                 )
+            
             st.dataframe(st.session_state.sonuc, use_container_width=True)
             h_skor, o_skor = memnuniyet_hesapla(st.session_state.sonuc)
             kalite_puani = max(0, 100 - int(st.session_state.fitness / 5)) 
