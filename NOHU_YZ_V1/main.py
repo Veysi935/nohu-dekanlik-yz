@@ -1,7 +1,11 @@
 import random
 import time 
 from deap import base, creator, tools
-from veri import derslikler, hocalar, dersler, gunler, saatler
+derslikler = []
+hocalar = []
+dersler = []
+gunler = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma"]
+saatler = ["08:00", "09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00"]
 
 hedef_strateji = "Dengeli"
 
