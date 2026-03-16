@@ -354,9 +354,15 @@ elif page == "🚀 3. YZ Motoru":
                     })
                 
                 st.session_state.sonuc = pd.DataFrame(res)
-                
-                # İşlem bittiğinde aynı 'durum' değişkenini güncelliyoruz!
-                durum.update(label="✨ Program Başarıyla Optimize Edildi!", state="complete", expanded=False)
+                # İşlem kutusunu "Tamamlandı" olarak güncelliyoruz
+                durum.update(label="✅ Optimizasyon Tamamlandı!", state="complete", expanded=False)
+
+        # --- EKRANDA TABLO ÖNİZLEMESİ GÖSTERME KISMI ---
+                st.markdown("### 📊 Oluşturulan Program Önizlemesi")
+                st.dataframe(st.session_state.sonuc, use_container_width=True)
+        # ----------------------------------------------
+
+        # Eğer indirme butonu (download_button) kodların varsa, onlar da tam olarak bu satırın altına gelecek.
             
             st.rerun()
         if st.session_state.sonuc is not None:
