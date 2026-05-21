@@ -164,7 +164,6 @@ else:
         st.divider()
 
         # ORİJİNAL SAYFALAR BİREBİR AYNISI
-        st.info("💡 Sistemi test etmek için GitHub repomuzdaki 'ornek_veri_sablonu.xlsx' dosyasını indirebilirsiniz.")
         if page == "📊 1. Ana Ekran & Veri":
             st.markdown("### 📥 Veri Girişi ve Kapasite Özeti")
             yuklenen = st.file_uploader("Excel Dosyası (.xlsx)", type=["xlsx"])
@@ -302,10 +301,9 @@ else:
         elif page == "🤖 5. YZ Asistan & Kriz Radarı":
             st.markdown("### 💬 YZ Asistan & Kriz Yönetim Merkezi")
             
-            # YENİ: 4 Sekmeli yapıya geçtik (Öğrenci Şikayetleri eklendi)
             tab_chat, tab_kriz, tab_gelen_kutusu, tab_ogrenci_sikayetleri = st.tabs(["💬 NLP Simülasyon", "⚡ Çakışma & Kapasite", "📥 Hoca Mesajları", "🎓 Öğrenci Şikayetleri"])
             
-            # --- 1. SEKME: NLP SİMÜLASYON (SINIF, ÖĞRENCİ VE HOCA İÇİN) ---
+            # --- 1. SEKME: NLP SİMÜLASYON ---
             with tab_chat:
                 st.info("💡 **Örnek Komutlar:** 'Sınıf önerilerini uygula', 'Öğrenci şikayetlerini çöz' veya 'Ahmet hoca sabahtan gelmesin'")
                 mesaj = st.chat_input("Asistana bir görev verin...")
@@ -340,7 +338,6 @@ else:
                                         ogr_say = int(ders_dict.get(d_adi, 0)) if ders_dict.get(d_adi) else 0
                                         s_kap = int(derslik_dict.get(s_adi, 0)) if derslik_dict.get(s_adi) else 0
 
-                                        # Kriz varsa boş sınıf bul ve değiştir
                                         if ogr_say > s_kap:
                                             for dl in st.session_state.derslikler:
                                                 kap = int(dl.get('kapasite', 0)) if dl.get('kapasite') else 0
@@ -357,9 +354,6 @@ else:
                                     st.session_state['gecici_simulasyon'] = df_sim
                                     st.session_state['gecici_fitness'] = st.session_state.get('fitness', 100)
 
-                        # ==========================================
-                        # SENARYO 2: ÖĞRENCİ ÇAKIŞMA SİMÜLASYONU
-                        # ==========================================
                         # ==========================================
                         # SENARYO 2: ÖĞRENCİ ÇAKIŞMA SİMÜLASYONU VE YAN ETKİ ANALİZİ
                         # ==========================================
@@ -388,7 +382,6 @@ else:
                                             satir1 = df_sim[df_sim['Ders'].str.contains(d1, case=False, na=False)]
                                             satir2 = df_sim[df_sim['Ders'].str.contains(d2, case=False, na=False)]
 
-                                            # Çakışma var mı kontrol et
                                             if not satir1.empty and not satir2.empty:
                                                 idx1, idx2 = satir1.index[0], satir2.index[0]
                                                 eski_gun = df_sim.at[idx2, 'Gün']
@@ -399,7 +392,6 @@ else:
                                                     sinif2 = df_sim.at[idx2, 'Sınıf']
                                                     yer_bulundu = False
                                                     
-                                                    # 2. Dersi sistemde boş bir yere kaydır
                                                     for g in gunler:
                                                         for s in saatler:
                                                             s_tam = f"{s} - {str(int(s[:2])+1).zfill(2)}:00"
@@ -410,19 +402,16 @@ else:
                                                                 df_sim.at[idx2, 'Gün'] = g
                                                                 df_sim.at[idx2, 'Saat'] = s_tam
                                                                 
-                                                                # --- YAN ETKİ (FATURA) ANALİZİ ---
                                                                 rapor = f"🎓 **ÇÖZÜLEN KRİZ:** '{d1}' ile '{d2}' dersleri ayrıldı.\n"
                                                                 rapor += f"🔄 **YAPILAN HAMLE:** **{d2}** dersi {eski_gun} {eski_saat} ➡️ **{g} {s_tam}** saatine kaydırıldı.\n"
                                                                 rapor += f"⚠️ **BU HAMLENİN BİZE MALİYETİ (YAN ETKİLER):**\n"
                                                                 
-                                                                # 1. Hoca yorgunluğu arttı mı?
                                                                 hoca_yeni_yuk = len(df_sim[(df_sim['Gün'] == g) & (df_sim['Hoca'] == hoca2)])
                                                                 if hoca_yeni_yuk >= 3:
                                                                     rapor += f"  ➖ **Hoca Yorgunluğu:** {hoca2} hocamızın {g} günü ders yükü {hoca_yeni_yuk} saate çıktı. Rıza alınması tavsiye edilir!\n"
                                                                 else:
                                                                     rapor += f"  ➕ **Hoca Uyumu:** {hoca2} hocamızın programı için gayet uygun.\n"
                                                                     
-                                                                # 2. Öğrenci şikayeti sebebi (Sistem formdan okuyor)
                                                                 rapor += f"  📌 **Öğrenci Notu:** '{sikayet['sebep']}' sorunu giderilmiş oldu."
                                                                 
                                                                 degisen_dersler_raporu.append(rapor)
@@ -441,8 +430,9 @@ else:
                                         st.dataframe(df_sim, use_container_width=True)
                                         st.session_state['gecici_simulasyon'] = df_sim
                                         st.session_state['gecici_fitness'] = st.session_state.get('fitness', 100)
+
                         # ==========================================
-                        # SENARYO 3: HOCA KISITI SİMÜLASYONU (Mevcut Olan)
+                        # SENARYO 3: HOCA KISITI SİMÜLASYONU
                         # ==========================================
                         else:
                             if len(st.session_state.hocalar) == 0:
@@ -480,15 +470,31 @@ else:
                         st.success("✅ Simülasyon başarıyla onaylandı! Yeni program tüm sisteme yansıtıldı.")
                         st.rerun()
 
-            # --- 2. SEKME: ÇAKIŞMA YÖNETİMİ VE RÜTBE BAZLI ÖNERİ (AYNI KALDI) ---
+            # --- 2. SEKME: ÇAKIŞMA YÖNETİMİ VE RÜTBE BAZLI ÖNERİ ---
             with tab_kriz:
-                st.subheader("👨‍🏫 Rütbe Tabanlı Hoca Kriz Yönetimi")
+                st.subheader("👨‍🏫 Akademik Uyum ve Kriz Yönetimi")
                 if "cakisma_cozuldu" not in st.session_state: st.session_state.cakisma_cozuldu = False
                 
-                if not st.session_state.cakisma_cozuldu:
-                    st.error("⚠️ **Potansiyel Çakışma:** Bir hocamızın kısıtı, üst düzey rütbeli bir hocanın dersiyle çakışıyor.")
-                    hoca_isimleri = [h['ad'] for h in st.session_state.hocalar] if 'hocalar' in st.session_state and st.session_state.hocalar else ["Excel Yüklenmedi"]
-                    secilen_hedef_hoca = st.selectbox("Saati İptal Edilip Bildirim Gönderilecek Hocayı Seçin:", hoca_isimleri)
+                if st.session_state.sonuc is not None and not st.session_state.cakisma_cozuldu:
+                    df_prog = st.session_state.sonuc
+                    conn = baglanti_olustur()
+                    kisitlar_df = pd.read_sql_query("SELECT h.ad_soyad, k.gun, k.saat FROM kisitlar k JOIN hocalar h ON k.hoca_id = h.id", conn)
+                    conn.close()
+
+                    sorunlu_hocalar = []
+                    for _, k in kisitlar_df.iterrows():
+                        s_kontrol = k['saat'][:5] 
+                        ihlal = df_prog[(df_prog['Hoca'] == k['ad_soyad']) & (df_prog['Gün'] == k['gun']) & (df_prog['Saat'].str.contains(s_kontrol))]
+                        if not ihlal.empty and k['ad_soyad'] not in sorunlu_hocalar:
+                            sorunlu_hocalar.append(k['ad_soyad'])
+
+                    if sorunlu_hocalar:
+                        st.error(f"⚠️ **Otomatik Tespit:** Algoritma zorunluluktan dolayı bazı kısıtları ihlal etmek zorunda kaldı. Kısıtı ezilen hocalarımız: **{', '.join(sorunlu_hocalar)}**")
+                        secilen_hedef_hoca = st.selectbox("Lütfen bilgilendirme ve yeni saat önerisi gönderilecek hocayı seçin:", sorunlu_hocalar)
+                    else:
+                        st.success("✅ Harika! Şu an hiçbir hocanın kısıtı ihlal edilmemiş, program herkesin isteğine uygun.")
+                        hoca_isimleri = [h['ad'] for h in st.session_state.hocalar] if 'hocalar' in st.session_state and st.session_state.hocalar else ["Excel Yüklenmedi"]
+                        secilen_hedef_hoca = st.selectbox("Yine de manuel bildirim göndermek isterseniz bir hoca seçin:", hoca_isimleri)
                     
                     oneri_metni = ""
                     if secilen_hedef_hoca != "Excel Yüklenmedi":
@@ -499,20 +505,23 @@ else:
                         carp = 1 
                         if not rutbe_sorgu.empty: carp = rutbe_sorgu['rutbe_carpani'].values[0]
                             
-                        if carp >= 3: oneri_metni = "💡 Rütbeniz gereği size en uygun VIP alternatif saatler: **Salı 10:00-12:00** veya **Çarşamba 13:00-15:00**"
-                        elif carp == 2: oneri_metni = "💡 Sizin için algoritmada en boş olan alternatif saatler: **Perşembe 10:00-12:00** veya **Çarşamba 15:00-17:00**"
-                        else: oneri_metni = "💡 Sistemdeki doluluk oranlarına göre seçebileceğiniz boş saatler: **Pazartesi 08:00-10:00** veya **Cuma 15:00-17:00**"
+                        if carp >= 3: oneri_metni = "💡 Kıymetli Hocam, programınızdaki yoğunluğu hafifletmek adına size en uygun alternatif saatler olarak **Salı 10:00-12:00** veya **Çarşamba 13:00-15:00** aralıklarını değerlendirmenizi saygılarımızla rica ederiz."
+                        elif carp == 2: oneri_metni = "💡 Sayın Hocam, sistemimizdeki genel doluluk oranlarına göre **Perşembe 10:00-12:00** veya **Çarşamba 15:00-17:00** saatleri dersleriniz için oldukça uygundur."
+                        else: oneri_metni = "💡 Bölüm programının sağlıklı yürütülebilmesi için uygun alternatif saatler olan **Pazartesi 08:00-10:00** veya **Cuma 15:00-17:00** aralıklarını değerlendirebilirsiniz."
 
-                    st.info(f"🤖 **YZ Asistanın Hocaya Otomatik Önerisi:** {oneri_metni}")
-                    ozel_not = st.text_area("Hocaya gönderilecek mesajın sonuna eklenecek Dekanlık Notu (İsteğe Bağlı):", placeholder="Örn: Hocam bölüm başkanının ricası üzerine dersinizi kaydırdık.")
-                    if st.button("✨ YZ Önerisiyle Birlikte Hocaya Bildirim Gönder", type="primary"):
+                    st.info(f"🤖 **Hocanın Ekranına Düşecek YZ Önerisi:**\n{oneri_metni}")
+                    ozel_not = st.text_area("Hocaya gönderilecek mesajın sonuna eklenecek Dekanlık Özel Notu (İsteğe Bağlı):", placeholder="Örn: Sayın hocam, bölüm başkanlığımızın ortak kararı gereği programınız bu şekilde güncellenmiştir...")
+                    
+                    if st.button("✨ Akademik Nezaketle Uyarı ve Öneriyi İlet", type="primary"):
                         st.session_state.cakisma_cozuldu = True
-                        baz_mesaj = f"Sayın {secilen_hedef_hoca}, seçmiş olduğunuz kısıtlı saatler daha yüksek rütbeli bir hocamızın zorunlu ortak dersiyle çakıştığı için iptal edilmiştir.\n\n{oneri_metni}"
-                        if ozel_not: baz_mesaj += f"\n\n📝 **Dekanlık Özel Notu:** {ozel_not}"
+                        baz_mesaj = f"Kıymetli {secilen_hedef_hoca};\n\nDekanlığımıza iletmiş olduğunuz saat kısıtınız, zorunlu ortak derslerin yerleşimi ve akademik hiyerarşi optimizasyonu sebebiyle oluşan sistem tıkanıklığından dolayı maalesef programda tam olarak uygulanamamıştır. Anlayışınız için teşekkür ederiz.\n\n{oneri_metni}"
+                        if ozel_not: baz_mesaj += f"\n\n📝 **Dekanlık Notu:** {ozel_not}"
                         st.session_state.hoca_uyari_mesaji = baz_mesaj
                         st.rerun()
+                elif st.session_state.sonuc is None:
+                    st.warning("Bu analizi yapabilmek için önce '3. YZ Motoru' sayfasından ana programı üretmelisiniz.")
                 else:
-                    st.success("✅ Tüm hoca krizleri çözüldü ve Akıllı Öneriler iletildi.")
+                    st.success("✅ Tüm akademik uyarılar başarıyla hocalara iletildi.")
 
             # --- 3. SEKME: HOCALARDAN GELEN MESAJLAR ---
             with tab_gelen_kutusu:
@@ -523,7 +532,7 @@ else:
                 if not df_gelenler.empty: st.dataframe(df_gelenler, use_container_width=True, hide_index=True)
                 else: st.info("Şu an hocalardan gelen bir kısıt veya mesaj bulunmuyor.")
 
-            # --- 4. SEKME: ÖĞRENCİLERDEN GELEN ŞİKAYETLER (YENİ EKLENDİ) ---
+            # --- 4. SEKME: ÖĞRENCİLERDEN GELEN ŞİKAYETLER ---
             with tab_ogrenci_sikayetleri:
                 st.subheader("🎓 Öğrencilerden Gelen Çakışma Bildirimleri")
                 conn = baglanti_olustur()
@@ -531,7 +540,6 @@ else:
                 conn.close()
                 if not df_sikayetler.empty: st.dataframe(df_sikayetler, use_container_width=True, hide_index=True)
                 else: st.info("Şu an öğrencilerden gelen bir çakışma bildirimi bulunmuyor.")
-
         elif page == "✏️ 4. Manuel Düzenleme":
             st.markdown("### ✏️ Manuel Program Düzenleyici")
             if st.session_state.sonuc is not None:
@@ -548,36 +556,65 @@ else:
             else:
                 st.warning("Düzenleme yapabilmek için önce '3. YZ Motoru' sayfasından programı üretmelisiniz.")        
         elif page == "🔐 6. Hesap Yönetimi":
-            st.markdown("### 🔐 Akademisyen Hesap Yönetimi")
-            st.write("Dekanlık olarak hocaların sisteme girip kendi kısıtlarını belirleyebilmesi için onlara yetkili hesap açın.")
-
-            with st.form("yeni_personel_formu"):
-                col1, col2 = st.columns(2)
-                with col1:
-                    ad = st.text_input("Hocanın Adı Soyadı (DİKKAT: Excel'deki ismiyle BİREBİR aynı olmalı!)")
-                    k_adi = st.text_input("Sisteme Giriş Kullanıcı Adı")
-                with col2:
-                    sifre = st.text_input("Şifre Belirleyin", type="password")
-                    rutbe = st.selectbox("Unvanı", ["Prof. Dr.", "Doç. Dr.", "Dr. Öğr. Üyesi", "Öğretim Görevlisi", "Araştırma Görevlisi"])
-                
-                if st.form_submit_button("Hesabı Oluştur ve Sisteme Kaydet", type="primary"):
-                    if ad and k_adi and sifre:
-                        carp = 3 if "Prof" in rutbe else 2 if "Doç" in rutbe else 1
-                        if personel_ekle(ad, k_adi, sifre, carp, 'hoca'): 
-                            st.success(f"✅ {ad} için hesap başarıyla açıldı! Artık sisteme giriş yapabilir.")
-                        else: 
-                            st.error("❌ Bu kullanıcı adı zaten sistemde var, lütfen başka seçin!")
-                    else:
-                        st.warning("Lütfen tüm alanları doldurun.")
+            st.subheader("⚙️ Kullanıcı ve Yetki Yönetimi Merkezî")
             
-            st.markdown("---")
-            st.subheader("Sistemdeki Kayıtlı Akademisyen Hesapları")
-            conn = baglanti_olustur()
-            df_kayitli = pd.read_sql_query("SELECT id, ad_soyad as 'Ad Soyad', kullanici_adi as 'Kullanıcı Adı', rol as 'Yetki' FROM hocalar", conn)
-            conn.close()
-            st.dataframe(df_kayitli, use_container_width=True, hide_index=True)
+            # Sayfayı iki sekmeye bölüyoruz: Ekleme ve Silme
+            tab_ekle, tab_sil = st.tabs(["👤 Yeni Personel Ekle", "🗑️ Personel Kaydı Sil"])
+            
+            # --- 1. SEKME: PERSONEL EKLEME (Mevcut Kodun) ---
+            with tab_ekle:
+                with st.form("yeni_personel_formu"):
+                    y_ad = st.text_input("Ad Soyad")
+                    y_kadi = st.text_input("Kullanıcı Adı")
+                    y_sifre = st.text_input("Şifre", type="password")
+                    y_rutbe = st.number_input("Rütbe Çarpanı (1: Asistan, 2: Doçent, 3: Profesör)", min_value=1, max_value=3, value=1)
+                    y_rol = st.selectbox("Sistem Rolü", ["hoca", "admin"])
+                    
+                    if st.form_submit_button("Personeli Sisteme Kaydet", type="primary"):
+                        if personel_ekle(y_ad, y_kadi, y_sifre, y_rutbe, y_rol):
+                            st.success(f"✅ {y_ad} sisteme başarıyla eklendi!")
+                        else:
+                            st.error("❌ Bu kullanıcı adı zaten sistemde kayıtlı!")
+
+            # --- 2. SEKME: PERSONEL SİLME (YENİ EKLENEN KISIM) ---
+            with tab_sil:
+                st.markdown("### ⚠️ Sistemden Hoca Çıkarma İşlemi")
+                st.warning("Dikkat: Bir hocayı sildiğinizde, onun sisteme girdiği tüm kısıtlar ve mazeretler de kalıcı olarak silinecektir.")
+                
+                conn = baglanti_olustur()
+                # Admin (Sistem Yöneticisi) hesabını yanlışlıkla silmemek için onu listeden çıkarıyoruz
+                df_kullanicilar = pd.read_sql_query("SELECT id, ad_soyad, kullanici_adi, rutbe_carpani FROM hocalar WHERE rol != 'admin'", conn)
+                conn.close()
+
+                if not df_kullanicilar.empty:
+                    st.dataframe(df_kullanicilar, use_container_width=True, hide_index=True)
+                    
+                    # Kullanıcıya seçmesi için isimleri ve ID'leri birleştiriyoruz
+                    secenekler = df_kullanicilar['id'].astype(str) + " - " + df_kullanicilar['ad_soyad']
+                    silinecek_hoca = st.selectbox("Lütfen sistemden tamamen silinecek hocayı seçin:", secenekler)
+
+                    if st.button("🚨 Seçili Hocayı ve Verilerini Kalıcı Olarak Sil", type="primary"):
+                        # Seçilen metinden sadece ID numarasını çekip alıyoruz
+                        secili_id = int(silinecek_hoca.split(" - ")[0])
+                        
+                        conn = baglanti_olustur()
+                        cursor = conn.cursor()
+                        # 1. Önce hocanın girdiği kısıtları siliyoruz (Veritabanında yetim veri kalmasın diye)
+                        cursor.execute("DELETE FROM kisitlar WHERE hoca_id=?", (secili_id,))
+                        # 2. Sonra hocanın kendi hesabını siliyoruz
+                        cursor.execute("DELETE FROM hocalar WHERE id=?", (secili_id,))
+                        conn.commit()
+                        conn.close()
+                        
+                        st.success("✅ Hoca ve ona ait tüm veriler sistemden başarıyla kazındı!")
+                        st.rerun() # Sayfayı yenile ki giden hocanın adı anında listeden düşsün
+                else:
+                    st.info("Sistemde silinebilecek kayıtlı bir hoca hesabı bulunmuyor.")
     # --- YETKİ: STANDART HOCA (SADECE KISIT EKRANI) ---
    # ==========================================
+    # YETKİ 2: STANDART HOCA PANELİ (GELİŞMİŞ)
+    # ==========================================
+    # ==========================================
     # YETKİ 2: STANDART HOCA PANELİ (GELİŞMİŞ)
     # ==========================================
     # ==========================================
@@ -591,65 +628,85 @@ else:
                 st.session_state.giris_yapildi = False; st.rerun()
         st.divider()
 
-        # --- YENİ EKLENEN YZ BİLDİRİM EKRANI ---
         if 'hoca_uyari_mesaji' in st.session_state:
             st.warning("🔔 **DEKANLIK YZ SİSTEM BİLDİRİMİ:**")
             st.write(st.session_state.hoca_uyari_mesaji)
             if st.button("Okudum, Anladım"):
                 del st.session_state['hoca_uyari_mesaji']
                 st.rerun()
-        # ----------------------------------------
 
         tab_kisit, tab_program = st.tabs(["🚫 Kısıt (Kapalı Saat) Yönetimi", "📅 Haftalık Kişisel Ders Programım"])
         
-        # ... (Altındaki tab_kisit ve tab_program kodları tamamen aynı kalacak, onlara dokunma) ...
-        # --- 1. SEKME: KISIT YÖNETİMİ ---
         with tab_kisit:
-            st.info("Ders vermek istemediğiniz saatleri buradan yönetebilirsiniz. Seçtiğiniz saatler doğrudan Dekanlığın YZ motoruna iletilir.")
-            
-            c1, c2 = st.columns([1, 1])
+            c1, c2 = st.columns(2)
             with c1:
                 st.subheader("Yeni Saat Kapat ve Dekanlığa Bildir")
                 with st.form("coklu_kisit_formu"):
                     secilen_gun = st.selectbox("Gün Seçin", ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma"])
-                    secilen_saatler = st.multiselect("Kapatılacak Saatleri Seçin", ["08:00 - 09:00", "09:00 - 10:00", "10:00 - 11:00", "11:00 - 12:00", "13:00 - 14:00", "14:00 - 15:00", "15:00 - 16:00", "16:00 - 17:00"])
                     
-                    # YENİ: HOCANIN DEKANLIĞA YAZACAĞI MESAJ KUTUSU
-                    hoca_mesaji = st.text_input("Dekanlığa Notunuz / Mazeretiniz (Örn: Hastane randevum var, Şehir dışındayım)")
+                    tum_saatler = ["08:00 - 09:00", "09:00 - 10:00", "10:00 - 11:00", "11:00 - 12:00", "13:00 - 14:00", "14:00 - 15:00", "15:00 - 16:00", "16:00 - 17:00"]
                     
-                    if st.form_submit_button("Saatleri Kapat ve Mesajı İlet", type="primary"):
-                        if secilen_saatler and hoca_mesaji:
+                    # YENİ: TÜM GÜNÜ KAPAT BUTONU
+                    tum_gun = st.checkbox("🗓️ Bu Günün TAMAMINI Kapat")
+                    
+                    if tum_gun:
+                        secilen_saatler = tum_saatler
+                        st.info("💡 Seçili günün tüm saatleri otomatik olarak kapatılacak.")
+                    else:
+                        secilen_saatler = st.multiselect("Kapatılacak Saatleri Seçin", tum_saatler)
+                    
+                    # YENİ: İSTEĞE BAĞLI MAZERET
+                    hoca_mesaji = st.text_input("Dekanlığa Notunuz / Mazeretiniz (İsteğe Bağlı)")
+                    
+                    if st.form_submit_button("Saatleri Kapat ve İlet", type="primary"):
+                        if tum_gun or secilen_saatler:
+                            final_saatler = tum_saatler if tum_gun else secilen_saatler
                             conn = baglanti_olustur()
                             cursor = conn.cursor()
-                            for saat in secilen_saatler:
-                                cursor.execute("INSERT INTO kisitlar (hoca_id, gun, saat, sebep) VALUES (?, ?, ?, ?)", (st.session_state['kullanici_id'], secilen_gun, saat, hoca_mesaji))
+                            sebep_kayit = hoca_mesaji if hoca_mesaji else "Belirtilmedi" # Boşsa belirtilmedi yazar
+                            for saat in final_saatler:
+                                cursor.execute("INSERT INTO kisitlar (hoca_id, gun, saat, sebep) VALUES (?, ?, ?, ?)", (st.session_state['kullanici_id'], secilen_gun, saat, sebep_kayit))
                             conn.commit()
                             conn.close()
-                            st.success(f"{secilen_gun} günü için talebiniz ve mesajınız Dekanlığa iletildi!")
+                            st.success(f"✅ {secilen_gun} günü için kısıtlarınız kaydedildi!")
                             st.rerun()
                         else:
-                            st.warning("Lütfen kapatmak için saat seçin ve mazeretinizi yazın.")
+                            st.warning("⚠️ Lütfen kapatmak için saat seçin veya 'Tüm Günü Kapat'ı işaretleyin.")
                             
             with c2:
-                st.subheader("Aktif Kısıtlarınız ve Mesajlarınız")
+                st.subheader("Aktif Kısıtlarınız ve Yönetim")
                 conn = baglanti_olustur()
-                # YENİ: Listede artık hocanın yazdığı SEBEP de görünecek
-                df_kendi_kisitlari = pd.read_sql_query(f"SELECT gun as Gün, saat as Saat, sebep as 'Açıklamam' FROM kisitlar WHERE hoca_id={st.session_state['kullanici_id']}", conn)
-                conn.close()
-                            
-            
-                if not df_kendi_kisitlari.empty:
-                    st.dataframe(df_kendi_kisitlari, use_container_width=True, hide_index=True)
-                    # Yanlışlık yaparsa kısıtları silebilmesi için buton
-                    if st.button("🗑️ Tüm Kısıtlarımı Temizle", use_container_width=True):
-                        conn = baglanti_olustur()
-                        conn.cursor().execute(f"DELETE FROM kisitlar WHERE hoca_id={st.session_state['kullanici_id']}")
-                        conn.commit()
-                        conn.close()
-                        st.rerun()
+                cursor = conn.cursor()
+                # Kısıtları ID'si ile birlikte çekiyoruz ki hangisini sileceğimizi bilelim
+                kisitlar = cursor.execute(f"SELECT id, gun, saat, sebep FROM kisitlar WHERE hoca_id={st.session_state['kullanici_id']}").fetchall()
+                
+                if kisitlar:
+                    for k_id, gun, saat, sebep in kisitlar:
+                        col_info, col_btn = st.columns([8, 2])
+                        with col_info:
+                            st.info(f"🚫 **{gun}** | {saat} \n*(Mazeret: {sebep})*")
+                        with col_btn:
+                            # Streamlit'te her butonun eşsiz bir key'i olmalıdır
+                            if st.button("🗑️ Sil", key=f"sil_{k_id}", help="Bu kısıtı kaldır"):
+                                conn.cursor().execute(f"DELETE FROM kisitlar WHERE id={k_id}")
+                                conn.commit()
+                                st.success("Kısıt silindi!")
+                                st.rerun() # Sayfayı yenile ki silinen anında ekrandan kaybolsun
                 else:
-                    st.success("Şu an hiçbir kısıtınız bulunmuyor. Tüm saatlerde ders alabilirsiniz.")
-
+                    st.success("Şu an kapattığınız bir saat bulunmuyor. Programınız tamamen açık.")
+                conn.close()
+                    
+        with tab_program:
+            st.subheader("Bu Haftaki Derslerim")
+            if st.session_state.sonuc is not None:
+                df_prog = st.session_state.sonuc
+                hoca_prog = df_prog[df_prog['Hoca'] == st.session_state['ad_soyad']]
+                if not hoca_prog.empty:
+                    st.dataframe(hoca_prog, use_container_width=True, hide_index=True)
+                else:
+                    st.info("Size atanmış bir ders bulunamadı.")
+            else:
+                st.info("Dekanlık henüz programı oluşturmamış.")
         # --- 2. SEKME: KİŞİSEL DERS PROGRAMI ---
         with tab_program:
             st.subheader("Bana Atanan Dersler")

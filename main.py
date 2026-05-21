@@ -1,7 +1,14 @@
 import random
 import time 
 from deap import base, creator, tools
-from veri import derslikler, hocalar, dersler, gunler, saatler
+# Excel'den (app.py üzerinden) gelecek dinamik veriler için boş listeler:
+dersler = []
+hocalar = []
+derslikler = []
+
+# Üniversitemizin sabit gün ve saatleri:
+gunler = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma"]
+saatler = ["08:00 - 09:00", "09:00 - 10:00", "10:00 - 11:00", "11:00 - 12:00", "13:00 - 14:00", "14:00 - 15:00", "15:00 - 16:00", "16:00 - 17:00"]
 
 hedef_strateji = "Dengeli"
 
