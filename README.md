@@ -41,3 +41,20 @@ Projeyi kendi yerel bilgisayarınızda (local) çalıştırmak için aşağıdak
    ```bash
    git clone [https://github.com/KULLANICI_ADIN/OptiCampus.git](https://github.com/KULLANICI_ADIN/OptiCampus.git)
    cd OptiCampus
+
+## 🎮 Hızlı Demo Senaryosu (Nasıl Test Edilir?)
+
+Sistemin yeteneklerini tam olarak deneyimlemek için aşağıdaki 3 adımlı senaryoyu uygulayabilirsiniz:
+
+**Adım 1: Kısıtları Belirleyin (Hoca Rolü)**
+1. `test_hoca` hesabı ile sisteme giriş yapın.
+2. Sol menüden "Mazeret ve Kısıt Bildir" ekranına gelin.
+3. Kendinize (örneğin Perşembe sabahı için) bir "Ders Veremez" kısıtı ekleyin ve sistemden çıkış yapın.
+
+**Adım 2: Verileri Yükleyin (Dekanlık Rolü)**
+1. `admin` hesabı ile sisteme giriş yapın.
+2. Ana paneldeki yükleme alanına projemizin ana dizininde bulunan `ornek_veri_sablonu.xlsx` dosyasını yükleyin.
+
+**Adım 3: Yapay Zekayı Tetikleyin (Sihir Zamanı)**
+1. Admin panelindeki **"Genetik Algoritmayı Başlat"** butonuna tıklayın.
+2. Algoritmanın saniyeler içinde binlerce varyasyonu eleyerek, `test_hoca`nın Perşembe günkü kısıtını **hiçbir dersle çakıştırmadan** %100 uyumlu programı nasıl çizdiğini (ve gerekirse NLP asistanının nasıl devreye girdiğini) canlı olarak izleyin!
