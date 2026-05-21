@@ -164,6 +164,7 @@ else:
         st.divider()
 
         # ORİJİNAL SAYFALAR BİREBİR AYNISI
+        st.info("💡 Sistemi test etmek için GitHub repomuzdaki 'ornek_veri_sablonu.xlsx' dosyasını indirebilirsiniz.")
         if page == "📊 1. Ana Ekran & Veri":
             st.markdown("### 📥 Veri Girişi ve Kapasite Özeti")
             yuklenen = st.file_uploader("Excel Dosyası (.xlsx)", type=["xlsx"])
